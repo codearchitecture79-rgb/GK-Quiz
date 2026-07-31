@@ -11,7 +11,7 @@ const DATA_PATH = path.join(__dirname, 'data.json');
 // Global Middlewares
 app.use(cors({
     // origin: '*', // In production, replace with your frontend URL (e.g., 'https://yourquizsite.com')
-    origin: 'https://gkmaster-ind.netlify.app/', // For local development, allow frontend
+    origin: 'https://gkmaster-ind.netlify.app', // For local development, allow frontend
     methods: ['GET'],
     credentials: true
 }));
