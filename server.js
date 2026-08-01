@@ -45,6 +45,11 @@ const readQuizDatabase = () => {
  * @desc    Fetch quiz questions with optional shuffling
  * @query   ?shuffle=true (Optional: mixes up the 210 questions)
  */
+
+app.get('/',(req, res) => {
+    res.send('Welcome to the GK Quiz API. Use /api/questions to fetch quiz data.');
+});
+
 app.get('/api/questions/', async (req, res) => {
     fs.readFile(DATA_PATH, 'utf8', (err, data) => {
         if (err) {
