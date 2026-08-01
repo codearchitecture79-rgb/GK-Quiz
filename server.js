@@ -12,6 +12,7 @@ const DATA_PATH = path.join(__dirname, 'data.json');
 app.use(cors({
     // origin: '*', // In production, replace with your frontend URL (e.g., 'https://yourquizsite.com')
     origin: 'https://gkmaster-ind.netlify.app', // For local development, allow frontend
+    // origin: 'http://127.0.0.1:3000', // For local development, allow frontend
     methods: ['GET'],
     credentials: true
 }));
@@ -44,24 +45,31 @@ const readQuizDatabase = () => {
  * @desc    Fetch quiz questions with optional shuffling
  * @query   ?shuffle=true (Optional: mixes up the 210 questions)
  */
-app.get('/api/questions', async (req, res) => {
-    try {
-        let questions = await readQuizDatabase();
-
-        // Optional Feature: Shuffle dataset if requested in URL
-        if (req.query.shuffle === 'true') {
-            questions = questions.sort(() => Math.random() - 0.5);
+app.get('/api/questions/', async (req, res) => {
+    fs.readFile(DATA_PATH, 'utf8', (err, data) => {
+        if (err) {
+            console.error('File System Error:', err.message);
+            return res.status(500).json({ error: 'Failed to access question data.' });
         }
+        
+        try {
+            const allQuestions = JSON.parse(data);
+            // Parse requested packet number, default to Packet 1 if missing or invalid
+            let requestedPacket = parseInt(req.query.packet) || 1;
+            
+            if (requestedPacket < 1 || requestedPacket > 40) {
+                requestedPacket = 1;
+            }
 
-        res.status(200).json(questions);
-    } catch (error) {
-        console.error('Database Error:', error.message);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Internal Server Error',
-            message: 'Failed to access the question database file.' 
-        });
-    }
+            // Filter out exactly the 25 questions belonging to this sequential block
+            const packetQuestions = allQuestions.filter(q => q.packet === requestedPacket);
+            
+            res.status(200).json(packetQuestions);
+        } catch (parseError) {
+            console.error('JSON Parse Error:', parseError.message);
+            res.status(500).json({ error: 'Data parsing breakdown.' });
+        }
+    });
 });
 
 // 404 Wildcard Error Handler for broken routes
